@@ -1,4 +1,4 @@
-const { register } = require('../../handlers/registry')
+const { register } = require('../handlers/registry')
 const axios = require('axios')
 const { getTopOrders, calcStatsFromOrders } = require('../services/wfm')
 const { toSlug, formatTimeLeft } = require('../lib/text')
