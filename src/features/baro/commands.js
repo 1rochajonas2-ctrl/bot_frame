@@ -32,15 +32,25 @@ async function fetchBaroData() {
   for (let attempt = 0; attempt < 3; attempt++) {
     for (const u of urls) {
       try {
-        const res = await axios.get(u, { timeout: 30000, headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' } })
+        const res = await axios.get(u, {
+          timeout: 30000,
+          headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' }
+        })
         if (res.data) return res.data
-      } catch (e) { lastErr = e }
+      } catch (e) {
+        lastErr = e
+      }
     }
     if (attempt < 2) await sleep(1500)
+  }
+  throw lastErr || new Error('Baro API indisponível')
+}
+
 async function getBaro() {
   try {
     const data = await fetchBaroData()
     if (!data) return '❌ Não foi possível obter dados do Baro.'
+
     const now = Date.now()
     const activation = data.activation ? new Date(data.activation).getTime() : 0
     const expiry = data.expiry ? new Date(data.expiry).getTime() : 0
@@ -52,23 +62,29 @@ async function getBaro() {
       const when = data.activation ? new Date(data.activation).toLocaleString('pt-BR') : '?'
       const left = activation ? formatTimeLeft(activation - now) : '?'
       let reply = "🛸 *Baro Ki'Teer*\n\n❌ *Não está disponível no momento.*\n\n"
-      reply += '📅 Próxima chegada: *' + when + '*\n⏳ Em: *' + left + '*\n📍 Relay: *' + location + '*\n'
+      reply += '📅 Próxima chegada: *' + when + '*\n'
+      reply += '⏳ Em: *' + left + '*\n'
+      reply += '📍 Relay: *' + location + '*\n'
       if (expiry) reply += '🗓️ Fica até: ' + new Date(data.expiry).toLocaleString('pt-BR') + '\n'
       reply += '\n_Os itens só aparecem quando ele estiver ativo._'
       return reply
     }
 
-    let reply = "🛸 *Baro Ki'Teer — ATIVO*\n\n📍 *" + location + '*\n'
+    let reply = "🛸 *Baro Ki'Teer — ATIVO*\n\n"
+    reply += '📍 *' + location + '*\n'
     reply += '⏳ Sai em: *' + formatTimeLeft(expiry - now) + '*\n'
     reply += '🗓️ Até: ' + new Date(data.expiry).toLocaleString('pt-BR') + '\n'
-    if (!inv.length) return reply + '\n_Inventário vazio._'
+
+    if (!inv.length) return reply + '\n_Inventário vazio ou ainda não listado._'
 
     const cats = { mods: [], weapons: [], relics: [], cosmetics: [], other: [] }
     for (const item of inv) {
       const name = item.item || item.uniqueName || 'Item'
       const cat = classifyBaroItem(name, item.uniqueName)
       const ducats = item.ducats != null ? item.ducats + ' ducats' : '—'
-      const credits = item.credits != null ? Number(item.credits).toLocaleString('pt-BR') + ' cr' : '—'
+      const credits = item.credits != null
+        ? Number(item.credits).toLocaleString('pt-BR') + ' cr'
+        : '—'
       cats[cat].push('• *' + name + '*\n   ' + ducats + ' | ' + credits)
     }
 
@@ -79,15 +95,18 @@ async function getBaro() {
       { key: 'cosmetics', title: '✨ *Cosméticos*' },
       { key: 'other', title: '📦 *Outros*' }
     ]
+
     for (const sec of sections) {
       const list = cats[sec.key]
       if (!list.length) continue
-      reply += '\n' + sec.title + '\n' + list.join('\n') + '\n'
+      reply += '\n' + sec.title + '\n'
+      reply += list.join('\n') + '\n'
     }
+
     return reply.trim()
   } catch (err) {
     console.error('getBaro:', err.message)
-    return '❌ Erro ao buscar Baro.'
+    return '❌ Erro ao buscar Baro. (API lenta — tente de novo)'
   }
 }
 
