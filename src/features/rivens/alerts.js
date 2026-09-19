@@ -253,6 +253,27 @@ async function createWeekSnipers(userJid, rawArgs, isAdmFlag) {
   reply += '\n❌ `!snipeweek clear` remove todos'
   return reply.trim()
 }
+// --- Registro de comandos ---
+const { register } = require('../../handlers/registry')
+
+register(/^!alertariven\s+(.+)/i, async ({ sock, from, senderJid, isAdm, match }) => {
+  const owner = senderJid || from
+  await sock.sendMessage(from, { text: createRivenAlert(owner, match[1].trim(), isAdm) })
+})
+
+register(/^!snipeweek(?:\s+(.*))?$/i, async ({ sock, from, senderJid, isAdm, match }) => {
+  const owner = senderJid || from
+  await sock.sendMessage(from, { text: '📅 Montando snipers da semana...' })
+  await sock.sendMessage(from, { text: await createWeekSnipers(owner, match[1] || '', isAdm) })
+})
+
+register(/^!alertasriven$/i, async ({ sock, from, senderJid }) => {
+  await sock.sendMessage(from, { text: listRivenAlerts(senderJid || from) })
+})
+
+register(/^!delalertariven\s+(.+)/i, async ({ sock, from, senderJid, match }) => {
+  await sock.sendMessage(from, { text: deleteRivenAlert(senderJid || from, match[1].trim()) })
+})
 
 module.exports = {
   parseRivenAlertArgs, createRivenAlert, listRivenAlerts,
