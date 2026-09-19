@@ -1,0 +1,15 @@
+{
+  "name": "warframe-bot",
+  "version": "2.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "pino": "^9.0.0"
+  }
+}
