@@ -29,6 +29,7 @@ require('../features/rivens/gradeCmd')
 require('../features/rivens/metaCmd')
 require('../features/rivens/rankings')
 require('../features/rivens/alerts')
+require('../features/help')
 require('../features/highest/commands')
 
 function setupMessageHandler(sock) {
