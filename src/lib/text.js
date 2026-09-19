@@ -79,6 +79,6 @@ function toSlug(name) {
 
 module.exports = {
   clipText, jidToNumber, normalizeWeaponKey, normWeaponKeyLoose,
-  stripAccents, formatUptime, formatTimeLeft, formatBR, formatBRDate,
+  stripAccents, formatUptime, formatTimeLeft, formatDaysLeft, formatBR, formatBRDate,
   fmtPlat, toSlug
 }
