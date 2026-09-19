@@ -141,3 +141,8 @@ module.exports = {
   loadDispositions, findDisposition, resolveRivenCategory,
   getConfigKey, letterGrade, gradeOneStat, WFM_TO_BASE_STAT
 }
+function gradeRank(g) {
+  const order = { S: 10, '+A': 9, A: 8, '-A': 7, '+B': 6, B: 5, '-B': 4, '+C': 3, C: 2, '-C': 1, F: 0 }
+  return order[g] != null ? order[g] : -1
+}
+// adicione gradeRank ao module.exports
