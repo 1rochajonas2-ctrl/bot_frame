@@ -17,6 +17,17 @@ function normalizeWeaponKey(name) {
     .replace(/^_|_$/g, '')
 }
 
+function formatDaysLeft(ms) {
+  if (ms <= 0) return 'agora'
+  const d = Math.floor(ms / 86400000)
+  const h = Math.floor((ms % 86400000) / 3600000)
+  if (d <= 0) return h + 'h'
+  if (d === 1) return '1 dia'
+  if (d < 28) return d + ' dias'
+  const m = Math.round(d / 30)
+  return m <= 1 ? '1 mês' : m + ' meses'
+}
+
 function normWeaponKeyLoose(s) {
   return String(s || '')
     .toLowerCase()
