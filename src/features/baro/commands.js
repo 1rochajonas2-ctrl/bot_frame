@@ -37,3 +37,63 @@ async function fetchBaroData() {
       } catch (e) { lastErr = e }
     }
     if (attempt < 2) await sleep(1500)
+async function getBaro() {
+  try {
+    const data = await fetchBaroData()
+    if (!data) return '❌ Não foi possível obter dados do Baro.'
+    const now = Date.now()
+    const activation = data.activation ? new Date(data.activation).getTime() : 0
+    const expiry = data.expiry ? new Date(data.expiry).getTime() : 0
+    const isActive = activation && expiry && now >= activation && now < expiry
+    const location = data.location || 'Relay desconhecido'
+    const inv = data.inventory || []
+
+    if (!isActive) {
+      const when = data.activation ? new Date(data.activation).toLocaleString('pt-BR') : '?'
+      const left = activation ? formatTimeLeft(activation - now) : '?'
+      let reply = "🛸 *Baro Ki'Teer*\n\n❌ *Não está disponível no momento.*\n\n"
+      reply += '📅 Próxima chegada: *' + when + '*\n⏳ Em: *' + left + '*\n📍 Relay: *' + location + '*\n'
+      if (expiry) reply += '🗓️ Fica até: ' + new Date(data.expiry).toLocaleString('pt-BR') + '\n'
+      reply += '\n_Os itens só aparecem quando ele estiver ativo._'
+      return reply
+    }
+
+    let reply = "🛸 *Baro Ki'Teer — ATIVO*\n\n📍 *" + location + '*\n'
+    reply += '⏳ Sai em: *' + formatTimeLeft(expiry - now) + '*\n'
+    reply += '🗓️ Até: ' + new Date(data.expiry).toLocaleString('pt-BR') + '\n'
+    if (!inv.length) return reply + '\n_Inventário vazio._'
+
+    const cats = { mods: [], weapons: [], relics: [], cosmetics: [], other: [] }
+    for (const item of inv) {
+      const name = item.item || item.uniqueName || 'Item'
+      const cat = classifyBaroItem(name, item.uniqueName)
+      const ducats = item.ducats != null ? item.ducats + ' ducats' : '—'
+      const credits = item.credits != null ? Number(item.credits).toLocaleString('pt-BR') + ' cr' : '—'
+      cats[cat].push('• *' + name + '*\n   ' + ducats + ' | ' + credits)
+    }
+
+    const sections = [
+      { key: 'mods', title: '🧩 *Mods*' },
+      { key: 'weapons', title: '🔫 *Armas*' },
+      { key: 'relics', title: '📦 *Relíquias*' },
+      { key: 'cosmetics', title: '✨ *Cosméticos*' },
+      { key: 'other', title: '📦 *Outros*' }
+    ]
+    for (const sec of sections) {
+      const list = cats[sec.key]
+      if (!list.length) continue
+      reply += '\n' + sec.title + '\n' + list.join('\n') + '\n'
+    }
+    return reply.trim()
+  } catch (err) {
+    console.error('getBaro:', err.message)
+    return '❌ Erro ao buscar Baro.'
+  }
+}
+
+register(/^!baro$/i, async ({ sock, from }) => {
+  await sock.sendMessage(from, { text: '🛸 Consultando Baro...' })
+  await sock.sendMessage(from, { text: await getBaro() })
+})
+
+module.exports = { getBaro, classifyBaroItem, fetchBaroData }
