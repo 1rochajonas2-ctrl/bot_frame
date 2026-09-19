@@ -1,6 +1,6 @@
 const { register } = require('../../handlers/registry')
 const { fetchWS } = require('../../services/wfstat')
-const { formatTimeLeft, formatDaysLeft } = require('../../lib/text')
+const { formatTimeLeft } = require('../../lib/text')
 const axios = require('axios')
 
 // ===== Sortie =====
@@ -154,17 +154,6 @@ const INCARNON_ROTATIONS = [
   { letter: 'H', weapons: ['Dera', 'Sybaris', 'Cestra', 'Sicarus', 'Okina'] },
   { letter: 'I', weapons: ['Vectis', 'Stug', 'Ballistica', 'Destreza', 'Obex'] }
 ]
-
-function formatDaysLeft(ms) {
-  if (ms <= 0) return 'agora'
-  const d = Math.floor(ms / 86400000)
-  const h = Math.floor((ms % 86400000) / 3600000)
-  if (d <= 0) return h + 'h'
-  if (d === 1) return '1 dia'
-  if (d < 28) return d + ' dias'
-  const m = Math.round(d / 30)
-  return m <= 1 ? '1 mês' : m + ' meses'
-}
 
 function formatIncarnonMessage() {
   const now = Date.now()
